@@ -10,8 +10,12 @@ const API_BASE_URL = 'https://freecnam.org/dip?q=';
 lookupBtn.addEventListener('click', performLookup);
 
 async function performLookup() {
-  // Strip non-numeric characters for consistent caching and API requests
-  const number = phoneInput.value.replace(/\D/g, '');
+  let number = phoneInput.value.replace(/\D/g, '');
+
+// Remove leading '1' for North American numbers
+if (number.length === 11 && number.startsWith('1')) {
+  number = number.substring(1);
+}
   
   if (number.length < 10) {
     showResult({ error: 'Please enter a valid phone number.' }, false);
