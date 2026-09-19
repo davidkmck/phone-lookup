@@ -34,24 +34,24 @@ if (number.length === 11 && number.startsWith('1')) {
     return;
   }
 
-  // 2. Fetch if not in cache
+// 2. Fetch if not in cache (Example using a generic RapidAPI endpoint)
   try {
-    const targetUrl = encodeURIComponent(`${API_BASE_URL}${number}`);
-    const response = await fetch(`${CORS_PROXY}${targetUrl}`);
+    const options = {
+      method: 'GET',
+      headers: {
+        // You will need to register for a free tier API key
+        'X-RapidAPI-Key': 'c3116454e9mshbcf31a93163529fp1ee6e9jsn6149f2a509e5', 
+        'X-RapidAPI-Host': 'truecaller18.p.rapidapi.com'
+      }
+    };
+
+
+    // Make the direct fetch without a proxy
+    const response = await fetch(`https://the-api-host.p.rapidapi.com/lookup?phone=${number}`, options);
     
-    if (!response.ok) throw new Error('Network response failed');
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
     
-    const data = await response.json();
-    
-    // AllOrigins wraps the actual response text in a 'contents' property
-    // If you use a different proxy or an API that returns JSON directly, adjust this parsing
-    let parsedData;
-    try {
-      parsedData = JSON.parse(data.contents);
-    } catch (e) {
-      // Fallback if the API returns plain text (like some basic CNAMs)
-      parsedData = { name: data.contents };
-    }
+    const parsedData = await response.json();
 
     // 3. Save to LocalStorage and Display
     localStorage.setItem(number, JSON.stringify(parsedData));
@@ -59,9 +59,8 @@ if (number.length === 11 && number.startsWith('1')) {
 
   } catch (error) {
     console.error('Error fetching data:', error);
-    showResult({ error: 'Lookup failed. Try again later.' }, false);
+    showResult({ error: 'Lookup failed. Check API limits.' }, false);
   }
-}
 
 function showResult(data, isCached) {
   if (data.error) {
