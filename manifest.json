@@ -2,7 +2,7 @@
   "name": "Caller Screen - Reverse Lookup",
   "short_name": "Caller Screen",
   "description": "Screen unknown calls and cache reverse phone lookup results.",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1f2937",
