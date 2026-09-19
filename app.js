@@ -73,14 +73,12 @@ async function performLookup() {
   }
 }
 
-
 function showResult(data, isCached) {
   if (data.error) {
     resultContainer.innerHTML = `<p class="error">${data.error}</p>`;
     return;
   }
 
-  // Handle API validation responses
   const isValid = data.valid ? 'Valid Number' : 'Invalid Number';
   const validClass = data.valid ? 'valid-badge' : 'invalid-badge';
   
@@ -89,8 +87,15 @@ function showResult(data, isCached) {
   const location = data.location ? `${data.location}, ${data.region || ''}` : (data.region || 'Unknown');
   const timezone = (data.timezones && data.timezones.length > 0) ? data.timezones[0] : '';
 
+  let digits = phoneNum.replace(/\D/g, '');
+  let cacheKey = digits.length === 11 && digits.startsWith('1') ? digits.substring(1) : digits;
+  
+  const existingRecord = JSON.parse(localStorage.getItem(cacheKey)) || {};
+  const savedComment = existingRecord.comment || '';
+  const savedTimestamp = existingRecord.timestamp || '';
+
   resultContainer.innerHTML = `
-    <div class="card">
+    <div class="card" data-key="${cacheKey}">
       <div class="header-row">
         <h2>${phoneNum}</h2>
         <span class="status-badge ${validClass}">${isValid}</span>
@@ -100,11 +105,70 @@ function showResult(data, isCached) {
         <p><strong>Location:</strong> ${location}</p>
         ${timezone ? `<p><strong>Timezone:</strong> ${timezone}</p>` : ''}
       </div>
+
+      <div class="comment-section">
+        <label for="caller-comment"><strong>Notes / Tag:</strong></label>
+        <div class="comment-input-row">
+          <input type="text" id="caller-comment" placeholder="e.g. scammer, dentist..." value="${savedComment}">
+          <button id="save-comment-btn" class="save-btn">Save Note</button>
+        </div>
+        ${savedTimestamp ? `<small class="timestamp">Last saved: ${savedTimestamp}</small>` : ''}
+      </div>
+
+      <div class="card-actions">
+        <button id="delete-entry-btn" class="delete-btn">Delete Entry & Bypass Cache</button>
+      </div>
+
       <span class="badge ${isCached ? 'cached' : 'new'}">
         ${isCached ? 'Loaded from Cache' : 'New Lookup'}
       </span>
     </div>
   `;
+
+  // Attach event listeners
+  document.getElementById('save-comment-btn').addEventListener('click', () => {
+    saveCommentAndData(data, cacheKey);
+  });
+
+  document.getElementById('delete-entry-btn').addEventListener('click', () => {
+    localStorage.removeItem(cacheKey);
+    resultContainer.innerHTML = `<p class="success-msg">Entry deleted from local storage. Next search will fetch fresh data from the API.</p>`;
+    phoneInput.value = '';
+  });
+}
+function saveCommentAndData(apiData, cacheKey) {
+  const commentInput = document.getElementById('caller-comment');
+  const commentText = commentInput ? commentInput.value.trim() : '';
+  
+  // Generate a clean human-readable timestamp (e.g., "Sept 19, 2026, 2:45 PM")
+  const now = new Date();
+  const timestamp = now.toLocaleString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric', 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
+
+  // Bundle everything together
+  const recordToSave = {
+    ...apiData,
+    comment: commentText,
+    timestamp: timestamp
+  };
+
+  // Save back to localStorage
+  localStorage.setItem(cacheKey, JSON.stringify(recordToSave));
+
+  // Visual confirmation feedback
+  const btn = document.getElementById('save-comment-btn');
+  btn.textContent = 'Saved!';
+  btn.style.backgroundColor = '#28a745';
+  setTimeout(() => {
+    btn.textContent = 'Save Note';
+    btn.style.backgroundColor = '';
+  }, 1500);
 }
 
 // Register Service Worker for PWA offline capabilities
