@@ -12,18 +12,29 @@ const API_BASE_URL = 'https://freecnam.org/dip?q=';
 lookupBtn.addEventListener('click', performLookup);
 
 async function performLookup() {
-  let number = phoneInput.value.replace(/\D/g, '');
+  let rawInput = phoneInput.value.trim();
+  let digits = rawInput.replace(/\D/g, '');
 
-  if (number.length < 10) {
-    showResult({ error: 'Please enter a valid phone number.' }, false);
+  // Handle North American numbers cleanly
+  let formattedNumber = '';
+  if (digits.length === 10) {
+    formattedNumber = '+1' + digits;
+  } else if (digits.length === 11 && digits.startsWith('1')) {
+    formattedNumber = '+' + digits;
+  } else if (digits.length > 11) {
+    // If it already has an international country code
+    formattedNumber = '+' + digits;
+  } else {
+    showResult({ error: 'Please enter a valid 10-digit phone number.' }, false);
     return;
   }
 
   resultContainer.innerHTML = '<p>Searching...</p>';
   resultContainer.classList.remove('hidden');
 
-  // 1. Check LocalStorage Cache
-  const cachedData = localStorage.getItem(number);
+  // 1. Check LocalStorage Cache (using the 10-digit core as the key for consistency)
+  let cacheKey = digits.length === 11 ? digits.substring(1) : digits;
+  const cachedData = localStorage.getItem(cacheKey);
   if (cachedData) {
     showResult(JSON.parse(cachedData), true);
     return;
@@ -33,7 +44,7 @@ async function performLookup() {
   const k2 = 'e4cap1843bdjsn7b730e141b59';
   const apiKey = k1 + k2;
 
-  // 2. Fetch directly from RapidAPI (GET request)
+  // 2. Fetch directly from RapidAPI using the properly formatted number
   try {
     const options = {
       method: 'GET',
@@ -44,8 +55,7 @@ async function performLookup() {
       }
     };
 
-    // Append the phone number to the URL query string
-    const response = await fetch(`https://phone-number-validator17.p.rapidapi.com/v1/phone/validate?number=${number}`, options);
+    const response = await fetch(`https://phone-number-validator17.p.rapidapi.com/v1/phone/validate?number=${encodeURIComponent(formattedNumber)}`, options);
     
     if (!response.ok) throw new Error(`API error: ${response.status}`);
     
@@ -54,7 +64,7 @@ async function performLookup() {
     console.log('Validator API Response:', parsedData);
 
     // 3. Save to LocalStorage and Display
-    localStorage.setItem(number, JSON.stringify(parsedData));
+    localStorage.setItem(cacheKey, JSON.stringify(parsedData));
     showResult(parsedData, false);
 
   } catch (error) {
