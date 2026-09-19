@@ -3,7 +3,9 @@ const lookupBtn = document.getElementById('lookupBtn');
 const resultContainer = document.getElementById('resultContainer');
 
 // Using AllOrigins as the free public CORS proxy
-const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+//const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+const CORS_PROXY = 'https://corsproxy.io/?';
+
 // Replace with your chosen free API endpoint
 const API_BASE_URL = 'https://freecnam.org/dip?q='; 
 
