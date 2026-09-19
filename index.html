@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caller Screen</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Link to PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <main class="container">
+    <h1>Caller Screen</h1>
+    <p>Identify unknown numbers instantly.</p>
+    
+    <div class="input-group">
+      <input type="tel" id="phoneInput" placeholder="e.g., 5551234567" autocomplete="tel">
+      <button id="lookupBtn">Search</button>
+    </div>
+
+    <div id="resultContainer" class="hidden">
+      <!-- Results injected here via JS -->
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
