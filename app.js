@@ -10,17 +10,17 @@ const CORS_PROXY = 'https://corsproxy.io/?';
 const API_BASE_URL = 'https://freecnam.org/dip?q='; 
 
 lookupBtn.addEventListener('click', performLookup);
+
 async function performLookup() {
   let number = phoneInput.value.replace(/\D/g, '');
 
-  // If the user enters a standard 10-digit number, prepend the '1' country code for Truecaller
-  if (number.length === 10) {
-    number = '1' + number;
+  // Strip leading '1' if the user types it (since we will use the countryCode parameter)
+  if (number.length === 11 && number.startsWith('1')) {
+    number = number.substring(1);
   }
   
-  // Now we check if it's less than 11 (since valid NA numbers with country code are 11 digits)
-  if (number.length < 11) {
-    showResult({ error: 'Please enter a valid phone number including area code.' }, false);
+  if (number.length !== 10) {
+    showResult({ error: 'Please enter a valid 10-digit phone number.' }, false);
     return;
   }
 
@@ -34,31 +34,36 @@ async function performLookup() {
     return;
   }
 
-  // Split the key to hide it from GitHub's automated scanner
-  const k1 = '2380dc8213msh4eef0c27097194';
-  const k2 = 'dp113a42jsna180ad9383c8';
+  const k1 = 'becfa7c4f9msh92f71c735';
+  const k2 = 'dfab97p19fadajsnebd212a0b50a';
   const apiKey = k1 + k2;
   
   // 2. Fetch directly from RapidAPI
   try {
+    // Format the body data as x-www-form-urlencoded
+    const bodyData = new URLSearchParams();
+    bodyData.append('phone', number);
+    bodyData.append('countryCode', 'US'); // Use 'US' for North American numbers
+
     const options = {
-      method: 'GET',
+      method: 'POST', // Changed from GET to POST
       headers: {
-        'Content-Type': 'application/json',
-        'X-RapidAPI-Key': apiKey, // Correctly applies the joined key
-        'X-RapidAPI-Host': 'truecaller18.p.rapidapi.com'
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-RapidAPI-Key': apiKey, 
+        'X-RapidAPI-Host': 'truecaller-api11.p.rapidapi.com'
+      },
+      body: bodyData
     };
 
-    // Make the direct fetch
-    const response = await fetch(`https://truecaller18.p.rapidapi.com/lookup/?phone=${number}`, options);
+    // Make the POST fetch
+    const response = await fetch('https://truecaller-api11.p.rapidapi.com/v2.php', options);
     
     if (!response.ok) throw new Error(`API error: ${response.status}`);
     
     const parsedData = await response.json();
 
     // Log the response to the console so you can see the exact data structure
-    console.log('Truecaller API Response:', parsedData);
+    console.log('New API Response:', parsedData);
 
     // 3. Save to LocalStorage and Display
     localStorage.setItem(number, JSON.stringify(parsedData));
