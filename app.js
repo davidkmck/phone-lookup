@@ -81,12 +81,14 @@ function showResult(data, isCached) {
     return;
   }
 
-  // Adjust these fields based on the specific API you end up choosing
-  const callerName = data.name || data.CNAM || 'Unknown Caller';
+  // This API nests the details inside a 'data' object
+  const callerName = (data.data && data.data.name) ? data.data.name : 'Unknown Caller';
+  const phoneNum = (data.data && data.data.phone) ? data.data.phone : '';
   
   resultContainer.innerHTML = `
     <div class="card">
       <h2>${callerName}</h2>
+      <p>${phoneNum}</p>
       <span class="badge ${isCached ? 'cached' : 'new'}">
         ${isCached ? 'Loaded from Cache' : 'New Lookup'}
       </span>
