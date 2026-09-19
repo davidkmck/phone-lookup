@@ -80,14 +80,26 @@ function showResult(data, isCached) {
     return;
   }
 
-  // This API nests the details inside a 'data' object
-  const callerName = (data.data && data.data.name) ? data.data.name : 'Unknown Caller';
-  const phoneNum = (data.data && data.data.phone) ? data.data.phone : '';
+  // Handle API validation responses
+  const isValid = data.valid ? 'Valid Number' : 'Invalid Number';
+  const validClass = data.valid ? 'valid-badge' : 'invalid-badge';
   
+  const phoneNum = data.international || data.input || '';
+  const lineType = data.line_type ? data.line_type.replace(/_/g, ' ') : 'Unknown';
+  const location = data.location ? `${data.location}, ${data.region || ''}` : (data.region || 'Unknown');
+  const timezone = (data.timezones && data.timezones.length > 0) ? data.timezones[0] : '';
+
   resultContainer.innerHTML = `
     <div class="card">
-      <h2>${callerName}</h2>
-      <p>${phoneNum}</p>
+      <div class="header-row">
+        <h2>${phoneNum}</h2>
+        <span class="status-badge ${validClass}">${isValid}</span>
+      </div>
+      <div class="details-grid">
+        <p><strong>Type:</strong> <span class="capitalize">${lineType}</span></p>
+        <p><strong>Location:</strong> ${location}</p>
+        ${timezone ? `<p><strong>Timezone:</strong> ${timezone}</p>` : ''}
+      </div>
       <span class="badge ${isCached ? 'cached' : 'new'}">
         ${isCached ? 'Loaded from Cache' : 'New Lookup'}
       </span>
