@@ -1,4 +1,4 @@
-const CACHE_NAME = 'caller-screen-v3';
+const CACHE_NAME = 'caller-screen-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
