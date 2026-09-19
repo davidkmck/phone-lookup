@@ -14,13 +14,8 @@ lookupBtn.addEventListener('click', performLookup);
 async function performLookup() {
   let number = phoneInput.value.replace(/\D/g, '');
 
-  // Strip leading '1' if the user types it (since we will use the countryCode parameter)
-  if (number.length === 11 && number.startsWith('1')) {
-    number = number.substring(1);
-  }
-  
-  if (number.length !== 10) {
-    showResult({ error: 'Please enter a valid 10-digit phone number.' }, false);
+  if (number.length < 10) {
+    showResult({ error: 'Please enter a valid phone number.' }, false);
     return;
   }
 
@@ -34,36 +29,29 @@ async function performLookup() {
     return;
   }
 
-  const k1 = 'becfa7c4f9msh92f71c735';
-  const k2 = 'dfab97p19fadajsnebd212a0b50a';
+  const k1 = 'e5d8803a61mshafa8fca57b4';
+  const k2 = 'e4cap1843bdjsn7b730e141b59';
   const apiKey = k1 + k2;
-  
-  // 2. Fetch directly from RapidAPI
-  try {
-    // Format the body data as x-www-form-urlencoded
-    const bodyData = new URLSearchParams();
-    bodyData.append('phone', number);
-    bodyData.append('countryCode', 'US'); // Use 'US' for North American numbers
 
+  // 2. Fetch directly from RapidAPI (GET request)
+  try {
     const options = {
-      method: 'POST', // Changed from GET to POST
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
         'X-RapidAPI-Key': apiKey, 
-        'X-RapidAPI-Host': 'truecaller-api11.p.rapidapi.com'
-      },
-      body: bodyData
+        'X-RapidAPI-Host': 'phone-number-validator17.p.rapidapi.com'
+      }
     };
 
-    // Make the POST fetch
-    const response = await fetch('https://truecaller-api11.p.rapidapi.com/v2.php', options);
+    // Append the phone number to the URL query string
+    const response = await fetch(`https://phone-number-validator17.p.rapidapi.com/v1/phone/validate?number=${number}`, options);
     
     if (!response.ok) throw new Error(`API error: ${response.status}`);
     
     const parsedData = await response.json();
 
-    // Log the response to the console so you can see the exact data structure
-    console.log('New API Response:', parsedData);
+    console.log('Validator API Response:', parsedData);
 
     // 3. Save to LocalStorage and Display
     localStorage.setItem(number, JSON.stringify(parsedData));
@@ -74,6 +62,7 @@ async function performLookup() {
     showResult({ error: 'Lookup failed. Check API limits.' }, false);
   }
 }
+
 
 function showResult(data, isCached) {
   if (data.error) {
