@@ -14,10 +14,10 @@ lookupBtn.addEventListener('click', performLookup);
 async function performLookup() {
   let number = phoneInput.value.replace(/\D/g, '');
 
-// Remove leading '1' for North American numbers
-if (number.length === 11 && number.startsWith('1')) {
-  number = number.substring(1);
-}
+  // Remove leading '1' for North American numbers
+  if (number.length === 11 && number.startsWith('1')) {
+    number = number.substring(1);
+  }
   
   if (number.length < 10) {
     showResult({ error: 'Please enter a valid phone number.' }, false);
@@ -34,24 +34,26 @@ if (number.length === 11 && number.startsWith('1')) {
     return;
   }
 
-// 2. Fetch if not in cache (Example using a generic RapidAPI endpoint)
+  // 2. Fetch directly from RapidAPI
   try {
     const options = {
       method: 'GET',
       headers: {
-        // You will need to register for a free tier API key
+        'Content-Type': 'application/json',
         'X-RapidAPI-Key': 'c3116454e9mshbcf31a93163529fp1ee6e9jsn6149f2a509e5', 
         'X-RapidAPI-Host': 'truecaller18.p.rapidapi.com'
       }
     };
 
-
-    // Make the direct fetch without a proxy
-    const response = await fetch(`https://the-api-host.p.rapidapi.com/lookup?phone=${number}`, options);
+    // Make the direct fetch using the exact URL path from your curl command
+    const response = await fetch(`https://truecaller18.p.rapidapi.com/lookup/?phone=${number}`, options);
     
     if (!response.ok) throw new Error(`API error: ${response.status}`);
     
     const parsedData = await response.json();
+
+    // Log the response to the console so you can see the exact data structure
+    console.log('Truecaller API Response:', parsedData);
 
     // 3. Save to LocalStorage and Display
     localStorage.setItem(number, JSON.stringify(parsedData));
@@ -61,6 +63,7 @@ if (number.length === 11 && number.startsWith('1')) {
     console.error('Error fetching data:', error);
     showResult({ error: 'Lookup failed. Check API limits.' }, false);
   }
+} 
 
 function showResult(data, isCached) {
   if (data.error) {
